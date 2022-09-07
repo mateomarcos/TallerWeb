@@ -36,11 +36,11 @@ func Signup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 		return
 	}
-	var ctx, _ = context.WithTimeout(context.Background(), time.Second*100)
+	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
 
 	//Verify if user with given username already exists
 	count, err := userCollection.CountDocuments(ctx, bson.M{"username": user.Username}) //Lo usamos para validar, si ya hay documentos con el mismo mail
-	//defer cancel()
+	defer cancel()
 	if err != nil {
 		log.Panic(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error occured while checking email"})
@@ -59,6 +59,7 @@ func Signup(c *gin.Context) {
 	user.ID = primitive.NewObjectID()
 
 	resultInsertionNumber, insertError := userCollection.InsertOne(ctx, user)
+	defer cancel()
 	if insertError != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "User item was not created"})
 		return
@@ -89,11 +90,12 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var ctx, _ = context.WithTimeout(context.Background(), time.Second*100)
+	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
 
 	// Check for username and password match, from Mongo to User middelware to hashpassword match
 	var foundUser models.User
 	err := userCollection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser) //decodifica el json a golang luego de buscarlo en la tabla
+	defer cancel()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
