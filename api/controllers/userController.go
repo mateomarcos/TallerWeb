@@ -4,23 +4,26 @@ import (
 	"Portfolio/database"
 	"Portfolio/models"
 	"context"
+	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
-
-	"github.com/gin-gonic/contrib/sessions"
+	//"github.com/gin-gonic/contrib/sessions"
 )
 
 var userCollection *mongo.Collection = database.OpenColllection(database.Client, "user")
 var validate = validator.New()
+var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
 func Signup(c *gin.Context) {
 	//username := c.PostForm("username")
@@ -77,8 +80,23 @@ func HashPassword(password string) string {
 	return string(bytes)
 }
 
+func generateJWT(username string) (string, error) {
+
+	claims := jwt.MapClaims{}
+	claims["username"] = username
+	claims["authorized"] = true
+	claims["exp"] = time.Now().Add(24 * time.Hour).Unix()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString([]byte(SECRET_KEY))
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	return tokenString, nil
+}
+
 func Login(c *gin.Context) {
-	session := sessions.Default(c)
 	var user models.User
 	if err := c.BindJSON(&user); err != nil { //traslada lo que tiene el contexto json a la variable golang user
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -107,14 +125,21 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 		return
 	}
-
-	// Save the username in the session
+	/*// Save the username in the session
 	session.Set("user", user.Username) // In real world usage you'd set this to the users ID ~ PENDIENTE CON ID NO FUNCIONA
 	if err := session.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully authenticated user"})
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully authenticated user"})*/
+
+	// devolver status ok y el token para que el frontend lo ponga a header? PENDIENTE
+	token, err := generateJWT(*user.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully authenticated user", "token": token})
 }
 
 func VerifyPassword(userPassword string, providedPassword string) (bool, string) {
@@ -129,8 +154,9 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 }
 
 func GetUser(c *gin.Context) {
-	session := sessions.Default(c)
-	user := session.Get("user")
+	//session := sessions.Default(c)
+	//user := session.Get("user")
+	user := c.Value("username") // CREO
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session token"})
 	} else {
@@ -147,9 +173,10 @@ func GetUser(c *gin.Context) {
 	}
 }
 
-func Logout(c *gin.Context) {
-	session := sessions.Default(c)
-	user := session.Get("user")
+/*func Logout(c *gin.Context) {
+	//session := sessions.Default(c)
+	//user := session.Get("user")
+	user := c.Value("username") // CREO
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session token"})
 		return
@@ -160,4 +187,4 @@ func Logout(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully logged out"})
-}
+}*/

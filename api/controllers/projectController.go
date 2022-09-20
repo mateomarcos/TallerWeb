@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -26,10 +25,11 @@ func NewProject(c *gin.Context) {
 		return
 	}
 	//Como el autor es un campo requerido lo ingreso antes de validar.
-	session := sessions.Default(c)
-	user := session.Get("user")
+	//session := sessions.Default(c)
+	//user := session.Get("user")
+	user := c.Value("username") // CREO
 	if user == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session token"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
 	} else {
 		var userObj models.User
 		err := userCollection.FindOne(ctx, bson.M{"username": user}).Decode(&userObj) //decodifica el json a golang luego de buscarlo en la tabla
@@ -94,8 +94,9 @@ func GetExtProjects(c *gin.Context) {
 }
 
 func GetProjects(c *gin.Context) {
-	session := sessions.Default(c)
-	user := session.Get("user")
+	//session := sessions.Default(c)
+	//user := session.Get("user")
+	user := c.Value("username") // CREO
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session token"})
 	} else {

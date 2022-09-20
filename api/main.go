@@ -2,14 +2,18 @@ package main
 
 import (
 	"Portfolio/routes"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
-	"github.com/gin-gonic/contrib/sessions"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
+
+var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
 func main() {
 	err := godotenv.Load(".env")
@@ -24,8 +28,8 @@ func main() {
 	}
 
 	router := gin.New()
-	router.Use(gin.Logger())
-	router.Use(sessions.Sessions("mysession", sessions.NewCookieStore([]byte(os.Getenv("SECRET_KEY")))))
+	//router.Use(gin.Logger())
+	//router.Use(sessions.Sessions("mysession", sessions.NewCookieStore([]byte(os.Getenv("SECRET_KEY")))))
 
 	//Rutas base, no requieren autenticacion
 	routes.AuthRoutes(router)
@@ -39,16 +43,54 @@ func main() {
 
 }
 
+// "MIDDLEWARE"
+func ValidateToken(signedToken string) (claims jwt.MapClaims, msg string) {
+	token, err := jwt.ParseWithClaims(signedToken, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv(SECRET_KEY)), nil
+	},
+	)
+	//fmt.Println("TOKEN: ", token)
+	/*fmt.Println("ERROR: ", err) Probando con THunderclient y Postman dice que signature es invalida, si solo pongo el token ahic
+	if err != nil {
+		msg = err.Error()
+		return nil, msg
+	}*/
+	claims, ok := token.Claims.(jwt.MapClaims)
+	fmt.Println(claims)
+
+	if !ok {
+		msg = fmt.Sprintf("The token is invalid")
+		msg = err.Error()
+		return nil, msg
+	}
+
+	if int64(claims["exp"].(float64)) < time.Now().Local().Unix() {
+		msg = fmt.Sprint("The token has expired")
+		msg = err.Error()
+		return
+	}
+
+	return claims, msg
+}
+
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		session := sessions.Default(c)
-		user := session.Get("user")
-		if user == nil {
-			// You'd normally redirect to login page
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session token"})
-		} else {
-			// Continue down the chain to handler etc
-			c.Next()
+		clientToken := c.Request.Header.Get("token")
+		if clientToken == "" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("No Authorization header provided")})
+			c.Abort()
+			return
 		}
+
+		claims, err := ValidateToken(clientToken)
+		if err != "" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+			c.Abort()
+			return
+		}
+
+		c.Set("username", claims["username"])
+		c.Set("authorized", claims["authorized"])
+		c.Next()
 	}
 }
