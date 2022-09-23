@@ -1,0 +1,26 @@
+<!-- parte de listar proyectos propios -->
+<h1 class="h3 mb-3 fw-normal">Listed Projects</h1>
+<div *ngFor="let project of projects">
+    {{ project["name"] }}
+    {{ project["description"] }}
+    {{ project["repository"] }}
+    {{ project["author"] }}
+    {{ project["created_at"] }}
+    <br>
+    <br>
+</div>
+                          
+                            
+<!-- parte de agregar nuevo proyecto -->
+
+<form [formGroup]="form" (submit)="submit()">
+    <h1 class="h3 mb-3 fw-normal">Enter a New Project</h1>
+  
+      <input formControlName="name" type="text" class="form-control" placeholder="Project Name" required>
+      <input formControlName="description" type="text" class="form-control" placeholder="Description" required>
+      <input formControlName="repository" type="text" class="form-control" placeholder="Repository Address" required>
+    
+    <button class="w-100 btn btn-lg btn-primary" type="submit">Submit</button>
+  </form>
+  
+  
