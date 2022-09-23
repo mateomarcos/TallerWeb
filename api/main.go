@@ -23,13 +23,8 @@ func main() {
 	}
 	port := os.Getenv("PORT")
 
-	if port == "" {
-		port = "8080"
-	}
-
 	router := gin.New()
-	//router.Use(gin.Logger())
-	//router.Use(sessions.Sessions("mysession", sessions.NewCookieStore([]byte(os.Getenv("SECRET_KEY")))))
+	router.Use(CORSMiddleware())
 
 	//Rutas base, no requieren autenticacion
 	routes.AuthRoutes(router)
@@ -49,12 +44,6 @@ func ValidateToken(signedToken string) (claims jwt.MapClaims, msg string) {
 		return []byte(os.Getenv(SECRET_KEY)), nil
 	},
 	)
-	//fmt.Println("TOKEN: ", token)
-	/*fmt.Println("ERROR: ", err) Probando con THunderclient y Postman dice que signature es invalida, si solo pongo el token ahic
-	if err != nil {
-		msg = err.Error()
-		return nil, msg
-	}*/
 	claims, ok := token.Claims.(jwt.MapClaims)
 	fmt.Println(claims)
 
@@ -75,9 +64,9 @@ func ValidateToken(signedToken string) (claims jwt.MapClaims, msg string) {
 
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		clientToken := c.Request.Header.Get("token")
+		clientToken := c.Request.Header.Get("Token")
 		if clientToken == "" {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("No Authorization header provided")})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("No Token header provided")})
 			c.Abort()
 			return
 		}
@@ -92,5 +81,25 @@ func AuthRequired() gin.HandlerFunc {
 		c.Set("username", claims["username"])
 		c.Set("authorized", claims["authorized"])
 		c.Next()
+	}
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:4200")
+		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Token")
+		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		fmt.Println("REQUEST METHOD: ", c.Request.Method)
+
+		if c.Request.Method == "OPTIONS" {
+			fmt.Println("OPTIONS")
+			c.AbortWithStatus(200)
+		} else {
+			c.Next()
+		}
 	}
 }

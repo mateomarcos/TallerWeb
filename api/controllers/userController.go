@@ -139,6 +139,7 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully authenticated user", "token": token})
 }
 
