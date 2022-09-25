@@ -4,6 +4,7 @@ import (
 	"Portfolio/database"
 	"Portfolio/models"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -75,6 +76,7 @@ func NewProject(c *gin.Context) {
 
 func GetExtProjects(c *gin.Context) {
 	username := c.Param("username") //la idea es recuperar todos los projectos cuyo author id sea userId
+	fmt.Print(username)
 
 	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
 

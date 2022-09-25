@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { LocalStorageService } from '../services/local-storage-service.service';
+import { Emitters } from '../emitters/emitter';
+import { NavComponent } from '../nav/nav.component';
 
 @Component({
   selector: 'app-login',
@@ -28,8 +30,9 @@ export class LoginComponent implements OnInit {
         var storage = new LocalStorageService;
         var stringRes = JSON.stringify(res)
         var jsonRes = JSON.parse(stringRes)
-        console.log(jsonRes["token"])
+        //console.log(jsonRes["token"])
         storage.Set("token",jsonRes["token"])
+        Emitters.authEmitter.emit(true);
       })
 
   }

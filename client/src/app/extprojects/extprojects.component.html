@@ -1,1 +1,11 @@
-<p>extprojects works!</p>
+<h1 class="h3 mb-3 fw-normal">Listed Projects</h1>
+<div *ngFor="let project of projects">
+    {{ project["name"] }}
+    {{ project["description"] }}
+    {{ project["repository"] }}
+    {{ project["author"] }}
+    {{ project["created_at"] }}
+    <br>
+    <br>
+</div>
+              

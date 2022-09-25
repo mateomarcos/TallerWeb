@@ -21,7 +21,7 @@ export class SignupComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  //FUNCIONA PERO A VECES DEVUELVE 400 BAD REQUEST PORQUE LOS CAMPOS TIENEN LONGITUD MINIMA Y NO SE HACE CHEQUEO EN EL FRONTEND
+  //FUNCIONA PERO A VECES DEVUELVE 400 BAD REQUEST PORQUE LOS CAMPOS TIENEN LONGITUD MINIMA Y NO SE HACE CHEQUEO EN EL FRONTEND, hay que AGREGAR VALIDATORS
   submit(): void  {
       this.http.post('http://localhost:9000/signup', this.form.getRawValue()).subscribe(res => {
         this.router.navigateByUrl('/login')

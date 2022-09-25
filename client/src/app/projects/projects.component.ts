@@ -28,7 +28,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   getProjects() {
-    this.http.get('http://localhost:9000/user/projects', this.form.getRawValue()).subscribe(data => {
+    this.http.get('http://localhost:9000/user/projects').subscribe(data => {
       var stringRes = JSON.stringify(data)
       this.projects = JSON.parse(stringRes)
       console.log(this.projects)

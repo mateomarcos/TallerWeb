@@ -12,6 +12,8 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { UniversalAppInterceptor } from './services/http-interceptor.service';
 import { ProjectsComponent } from './projects/projects.component';
 import { ExtprojectsComponent } from './extprojects/extprojects.component';
+import { LoginGuard } from './guard/loginguard';
+import { LocalStorageService } from './services/local-storage-service.service';
 
 @NgModule({
   declarations: [
@@ -33,8 +35,11 @@ import { ExtprojectsComponent } from './extprojects/extprojects.component';
   providers: [    {
     provide: HTTP_INTERCEPTORS,
     useClass: UniversalAppInterceptor,
-    multi: true
-  }],
+    multi: true,
+  },
+  LoginGuard,
+  LocalStorageService
+],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
