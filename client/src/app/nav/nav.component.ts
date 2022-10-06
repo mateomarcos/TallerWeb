@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import { LocalStorageService } from '../services/local-storage-service.service';
 import { Emitters } from '../emitters/emitter';
+import { CookiesService } from '../services/cookies.service';
 
 @Component({
   selector: 'app-nav',
@@ -11,7 +12,7 @@ import { Emitters } from '../emitters/emitter';
 export class NavComponent implements OnInit {
   authenticated = false;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private cookie:CookiesService) {
     var storage = new LocalStorageService;
     if (storage.IsLoggedIn()) {
       this.authenticated=true;
@@ -33,6 +34,7 @@ export class NavComponent implements OnInit {
   logout(): void {
     var storage = new LocalStorageService;
     storage.Remove("token");
+    this.cookie.Remove("token");
     this.authenticated = false;
   }
 

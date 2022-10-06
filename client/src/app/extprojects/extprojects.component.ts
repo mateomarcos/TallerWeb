@@ -29,7 +29,7 @@ export class ExtprojectsComponent implements OnInit {
       console.log(this.projects)
       //console.log(this.projects[0]["author"])
     }, error => {
-      console.log(error);
+      this.router.navigateByUrl('/user/projects')
     })
   }
 

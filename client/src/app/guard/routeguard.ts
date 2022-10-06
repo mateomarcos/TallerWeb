@@ -5,15 +5,14 @@ import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from
 import { ToastrService } from "ngx-toastr";
 
 @Injectable()
-export class LoginGuard implements CanActivate {
+export class RouteGuard implements CanActivate {
     constructor(public storage: LocalStorageService, public router:Router, public toastr: ToastrService ) { }
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
         if (this.storage.IsLoggedIn()) {
-            this.router.navigate(['user/projects'])
-            this.toastr.error(`You are already authenticated!`, `Try loging out`)
-            return false;
-        }
+            this.router.navigate(['/user/projects']);
+        } else this.router.navigate(['/login']);
+        this.toastr.info("This route doesn't exist!", "Invalid Access");
         return true;
     }
 }

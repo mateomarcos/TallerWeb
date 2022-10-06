@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { JwtHelperService } from '@auth0/angular-jwt';
 
 @Injectable()
 export class LocalStorageService {
@@ -16,9 +17,18 @@ export class LocalStorageService {
     }
 
     IsLoggedIn() : boolean {
-        if (localStorage.getItem("token") == null) {
+        var token = localStorage.getItem("token")
+        if (token == null) {
             return false;
         }
+        var helper = new JwtHelperService;
+        //console.log(helper.isTokenExpired(token))
+        //console.log(helper.getTokenExpirationDate(token))
+        if (helper.isTokenExpired(token)) {
+            localStorage.removeItem("token");
+            return false;
+        }
+
         return true;
     }
 }

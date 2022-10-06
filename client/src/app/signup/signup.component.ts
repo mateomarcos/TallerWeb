@@ -24,6 +24,7 @@ export class SignupComponent implements OnInit {
   //FUNCIONA PERO A VECES DEVUELVE 400 BAD REQUEST PORQUE LOS CAMPOS TIENEN LONGITUD MINIMA Y NO SE HACE CHEQUEO EN EL FRONTEND, hay que AGREGAR VALIDATORS
   submit(): void  {
       this.http.post('http://localhost:9000/signup', this.form.getRawValue()).subscribe(res => {
+        //mensaje de login successfull
         this.router.navigateByUrl('/login')
       })
 

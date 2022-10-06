@@ -4,7 +4,6 @@ import (
 	"Portfolio/database"
 	"Portfolio/models"
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var projectCollection *mongo.Collection = database.OpenColllection(database.Client, "project")
@@ -34,7 +34,7 @@ func NewProject(c *gin.Context) {
 	} else {
 		var userObj models.User
 		err := userCollection.FindOne(ctx, bson.M{"username": user}).Decode(&userObj) //decodifica el json a golang luego de buscarlo en la tabla
-		defer cancel()                                                                //DUDA
+		defer cancel()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -74,9 +74,61 @@ func NewProject(c *gin.Context) {
 	}
 }
 
+func DeleteProject(c *gin.Context) { //SIN POBAR
+	//Chequear si el usuario logeado es el autor del proyecto por las dudas
+	project := c.Param("name")
+	user := c.Value("username")
+	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
+	count, err := projectCollection.CountDocuments(ctx, bson.M{"name": project, "author": user}) //Lo usamos para validar, si ya hay documentos con el mismo nombre y pertenezcan al mismo autor
+	defer cancel()
+	if err != nil {
+		log.Panic(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error occured while checking project name"})
+		return
+	}
+	if count == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "This project either doesn't belong to you or it doesn't exist!"})
+		return
+	} else {
+		deleteResult, err := projectCollection.DeleteOne(ctx, bson.M{"name": project, "author": user})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error occured while deleting project"})
+			return
+		}
+		defer cancel()
+		c.JSON(http.StatusOK, deleteResult)
+	}
+}
+
+func GetActiveUsers(c *gin.Context) {
+	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
+
+	options := options.Find()
+	options.SetSort(bson.D{{"created_at", -1}})
+	options.SetLimit(4)
+	cursor, err := projectCollection.Find(ctx, bson.M{}, options)
+
+	defer cancel()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	var users []bson.M
+	if err = cursor.All(ctx, &users); err != nil {
+		log.Fatal(err)
+	}
+
+	/*fmt.Println(users) No devuelvo error porque si no hay documentos no tengo que romper la aplicacion
+	if len(users) == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "No listed projects under specified user. Maybe it doesn't exist!"})
+		return
+	}*/
+
+	c.JSON(http.StatusOK, users)
+}
+
 func GetExtProjects(c *gin.Context) {
 	username := c.Param("username") //la idea es recuperar todos los projectos cuyo author id sea userId
-	fmt.Print(username)
 
 	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
 
@@ -91,6 +143,12 @@ func GetExtProjects(c *gin.Context) {
 	if err = cursor.All(ctx, &userprojects); err != nil {
 		log.Fatal(err)
 	}
+	//fmt.Println(userprojects)
+	if len(userprojects) == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "No listed projects under specified user. Maybe it doesn't exist!"})
+		return
+	}
+
 	c.JSON(http.StatusOK, userprojects)
 
 }

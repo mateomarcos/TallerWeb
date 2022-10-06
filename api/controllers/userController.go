@@ -4,7 +4,6 @@ import (
 	"Portfolio/database"
 	"Portfolio/models"
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -85,12 +84,12 @@ func generateJWT(username string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["username"] = username
 	claims["authorized"] = true
-	claims["exp"] = time.Now().Add(24 * time.Hour).Unix()
+	claims["exp"] = time.Now().Add(4 * time.Hour).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenString, err := token.SignedString([]byte(SECRET_KEY))
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		return "", err
 	}
 	return tokenString, nil
@@ -146,7 +145,7 @@ func Login(c *gin.Context) {
 func VerifyPassword(userPassword string, providedPassword string) (bool, string) {
 	err := bcrypt.CompareHashAndPassword([]byte(providedPassword), []byte(userPassword))
 	check := true
-	msg := ""
+	msg := "Incorrect password!"
 
 	if err != nil {
 		check = false

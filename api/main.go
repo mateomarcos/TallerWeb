@@ -1,8 +1,8 @@
 package main
 
 import (
+	"Portfolio/controllers"
 	"Portfolio/routes"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -25,6 +25,7 @@ func main() {
 
 	router := gin.New()
 	router.Use(CORSMiddleware())
+	router.GET("/activeUsers", controllers.GetActiveUsers)
 
 	//Rutas base, no requieren autenticacion
 	routes.AuthRoutes(router)
@@ -45,16 +46,15 @@ func ValidateToken(signedToken string) (claims jwt.MapClaims, msg string) {
 	},
 	)
 	claims, ok := token.Claims.(jwt.MapClaims)
-	fmt.Println(claims)
 
 	if !ok {
-		msg = fmt.Sprintf("The token is invalid")
+		//msg = fmt.Sprintf("The token is invalid")
 		msg = err.Error()
 		return nil, msg
 	}
 
 	if int64(claims["exp"].(float64)) < time.Now().Local().Unix() {
-		msg = fmt.Sprint("The token has expired")
+		//msg = fmt.Sprint("The token has expired")
 		msg = err.Error()
 		return
 	}
@@ -66,7 +66,7 @@ func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		clientToken := c.Request.Header.Get("Token")
 		if clientToken == "" {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("No Token header provided")})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "No Token header provided"})
 			c.Abort()
 			return
 		}
@@ -93,10 +93,10 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 
-		fmt.Println("REQUEST METHOD: ", c.Request.Method)
+		//fmt.Println("REQUEST METHOD: ", c.Request.Method)
 
 		if c.Request.Method == "OPTIONS" {
-			fmt.Println("OPTIONS")
+			//fmt.Println("OPTIONS")
 			c.AbortWithStatus(200)
 		} else {
 			c.Next()

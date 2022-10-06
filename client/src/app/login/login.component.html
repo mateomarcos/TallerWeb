@@ -1,10 +1,13 @@
-<form [formGroup]="form" (submit)="submit()">
-  <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+<div class ="center" style="width: 25%; padding: 20px; margin-top: 0%; margin: 0 auto;">                             
+  <form [formGroup]="form" (submit)="submit()">
+    <h1 class="h3 mb-3 fw-normal">Login</h1>
 
-    <input formControlName="username" type="text" class="form-control" placeholder="Username" required>
+      <input formControlName="username" type="text" class="form-control" placeholder="Username" required>
 
-    <input formControlName="password" type="password" class="form-control" placeholder="Password" required>
-
-  <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
-</form>
-
+      <input formControlName="password" type="password" class="form-control" placeholder="Password" required>
+    <br>
+    <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+  </form>
+  <br>
+  <a>Still haven't signed up? <a routerLink="/signup">Create</a> an account instead!</a>
+</div>

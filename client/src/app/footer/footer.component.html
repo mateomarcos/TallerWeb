@@ -1,0 +1,20 @@
+    <div class="footer-dark">
+        <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6 col-md-3 item">
+                    <h3>Recently Submitted Projects</h3>
+                    <ul>
+                        <li *ngFor="let project of projects"><a href="/user/{{ project['author'] }}/projects">{{ project['name']}} by {{ project['author'] }}</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6 item text">
+                    <h3>About this application</h3>
+                    <p>Web Portfolio App was made by Mateo Marcos as a project for a college subject. Here, you can create a safe account using jwt authentication and upload projects you have worked on in the past, as well as reading other user's submissions.</p>
+                </div>
+                <div class="col item social"><a href="#"><i class="icon ion-social-facebook"></i></a><a href="#"><i class="icon ion-social-twitter"></i></a><a href="#"><i class="icon ion-social-snapchat"></i></a><a href="#"><i class="icon ion-social-instagram"></i></a></div>
+            </div>
+            <p class="copyright">Taller de Desarrollo Web UNICEN © 2022</p>
+        </div>
+    </footer>
+</div>
