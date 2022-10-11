@@ -3,7 +3,10 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LocalStorageService } from '../services/local-storage-service.service';
-
+  /* Since authentication is basically the main part of this project, clientes use this page to create an account.
+  Each input type in the .html file is binded to a form in the same FormGroup that then is sent to the backend for database insertion.
+  Since the backend does some validations to those inputs, sometimes an error is returned specifying the fields have failed in "min" tags.
+  */
 @Component({
   selector: 'app-signup',
   templateUrl: './signup.component.html',
@@ -21,10 +24,8 @@ export class SignupComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  //FUNCIONA PERO A VECES DEVUELVE 400 BAD REQUEST PORQUE LOS CAMPOS TIENEN LONGITUD MINIMA Y NO SE HACE CHEQUEO EN EL FRONTEND, hay que AGREGAR VALIDATORS
   submit(): void  {
-      this.http.post('http://localhost:9000/signup', this.form.getRawValue()).subscribe(res => {
-        //mensaje de login successfull
+      this.http.post('http://localhost:9000/signup', this.form.getRawValue()).subscribe(() => {
         this.router.navigateByUrl('/login')
       })
 

@@ -15,6 +15,10 @@ import (
 
 var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
+/*
+This application uses golang's gin web framework. It is actually really similar to the native net/http module.
+The general idea behind the application is to have a client-server architecture where the server stores users and projects in a mongo database.
+*/
 func main() {
 	err := godotenv.Load(".env")
 
@@ -27,7 +31,7 @@ func main() {
 	router.Use(CORSMiddleware())
 	router.GET("/activeUsers", controllers.GetActiveUsers)
 
-	//Rutas base, no requieren autenticacion
+	//Base routes. Do not require authentication.
 	routes.AuthRoutes(router)
 
 	private := router.Group("/user")
@@ -48,13 +52,11 @@ func ValidateToken(signedToken string) (claims jwt.MapClaims, msg string) {
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok {
-		//msg = fmt.Sprintf("The token is invalid")
 		msg = err.Error()
 		return nil, msg
 	}
 
 	if int64(claims["exp"].(float64)) < time.Now().Local().Unix() {
-		//msg = fmt.Sprint("The token has expired")
 		msg = err.Error()
 		return
 	}
@@ -84,6 +86,7 @@ func AuthRequired() gin.HandlerFunc {
 	}
 }
 
+/* CORS is used for access control. */
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:4200")
@@ -93,10 +96,7 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 
-		//fmt.Println("REQUEST METHOD: ", c.Request.Method)
-
 		if c.Request.Method == "OPTIONS" {
-			//fmt.Println("OPTIONS")
 			c.AbortWithStatus(200)
 		} else {
 			c.Next()

@@ -1,3 +1,4 @@
+    /*Not used*/
 
 export class Project {
     _id?:number;
@@ -6,9 +7,6 @@ export class Project {
     Repository: string;
     Created_at: Date;
     Author: string;
-
-
-    //HACEN FALTA LOS DEMAS ATRIBUTOS DE EL MODEL DE GOLANG?
 
     constructor(Name: string, Description: string, Repository: string, Author:string, Created_at:Date) {
         this.Name = Name;

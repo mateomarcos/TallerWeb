@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-
+  /*The exterior projects component works as a possible route within the application to show other user's pages. Retrieves data using get http calls to the server.
+  */
 @Component({
   selector: 'app-extprojects',
   templateUrl: './extprojects.component.html',
@@ -13,7 +14,6 @@ export class ExtprojectsComponent implements OnInit {
 
   constructor(private http: HttpClient, private router: Router, private aRouter: ActivatedRoute) { 
     this.user = this.aRouter.snapshot.paramMap.get('username');
-    console.log(this.aRouter.snapshot.paramMap.get('username'))
   }
 
   ngOnInit(): void {
@@ -21,13 +21,11 @@ export class ExtprojectsComponent implements OnInit {
   }
 
   getExtProjects() {
-    console.log(this.user)
     var route = 'http://localhost:9000/user/' +this.user+ '/projects'
     this.http.get(route).subscribe(data => {
       var stringRes = JSON.stringify(data)
       this.projects = JSON.parse(stringRes)
       console.log(this.projects)
-      //console.log(this.projects[0]["author"])
     }, error => {
       this.router.navigateByUrl('/user/projects')
     })

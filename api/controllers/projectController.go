@@ -1,5 +1,7 @@
 package controllers
 
+/*Controllers package is used to manage database connection for both models of our applications; User and Project.*/
+
 import (
 	"Portfolio/database"
 	"Portfolio/models"
@@ -17,23 +19,25 @@ import (
 
 var projectCollection *mongo.Collection = database.OpenColllection(database.Client, "project")
 
+/*
+Input: Gin Context (Middleware to allow data flow and json requests/responses.), HTTP Request with project format.
+Output: http response through gin context, database submission or error message.
+*/
 func NewProject(c *gin.Context) {
 	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
 	var project models.Project
 
-	if err := c.BindJSON(&project); err != nil { //traslada lo que tiene el contexto json a la variable golang user
+	if err := c.BindJSON(&project); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	//Como el autor es un campo requerido lo ingreso antes de validar.
-	//session := sessions.Default(c)
-	//user := session.Get("user")
-	user := c.Value("username") // CREO
+
+	user := c.Value("username")
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
 	} else {
 		var userObj models.User
-		err := userCollection.FindOne(ctx, bson.M{"username": user}).Decode(&userObj) //decodifica el json a golang luego de buscarlo en la tabla
+		err := userCollection.FindOne(ctx, bson.M{"username": user}).Decode(&userObj)
 		defer cancel()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -41,14 +45,13 @@ func NewProject(c *gin.Context) {
 		}
 		project.Author = userObj.Username
 
-		//validacion de los campos
 		validationErr := validate.Struct(project) //compara y valida
 		if validationErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			return
 		}
 
-		count, err := projectCollection.CountDocuments(ctx, bson.M{"name": project.Name, "author": project.Author}) //Lo usamos para validar, si ya hay documentos con el mismo nombre y pertenezcan al mismo autor
+		count, err := projectCollection.CountDocuments(ctx, bson.M{"name": project.Name, "author": project.Author})
 		defer cancel()
 		if err != nil {
 			log.Panic(err)
@@ -74,12 +77,15 @@ func NewProject(c *gin.Context) {
 	}
 }
 
-func DeleteProject(c *gin.Context) { //SIN POBAR
-	//Chequear si el usuario logeado es el autor del proyecto por las dudas
+/*
+Input: Gin Context (Middleware to allow data flow and json requests/responses.), parameter with project name to delete.
+Output: http response through gin context, database deletion or error message.
+*/
+func DeleteProject(c *gin.Context) {
 	project := c.Param("name")
 	user := c.Value("username")
 	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
-	count, err := projectCollection.CountDocuments(ctx, bson.M{"name": project, "author": user}) //Lo usamos para validar, si ya hay documentos con el mismo nombre y pertenezcan al mismo autor
+	count, err := projectCollection.CountDocuments(ctx, bson.M{"name": project, "author": user})
 	defer cancel()
 	if err != nil {
 		log.Panic(err)
@@ -100,6 +106,10 @@ func DeleteProject(c *gin.Context) { //SIN POBAR
 	}
 }
 
+/*
+Input: Gin Context (Middleware to allow data flow and json requests/responses.)
+Output: http response through gin context with the 4 most recent submitted projects.
+*/
 func GetActiveUsers(c *gin.Context) {
 	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
 
@@ -118,17 +128,15 @@ func GetActiveUsers(c *gin.Context) {
 		log.Fatal(err)
 	}
 
-	/*fmt.Println(users) No devuelvo error porque si no hay documentos no tengo que romper la aplicacion
-	if len(users) == 0 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "No listed projects under specified user. Maybe it doesn't exist!"})
-		return
-	}*/
-
 	c.JSON(http.StatusOK, users)
 }
 
+/*
+Input: Gin Context (Middleware to allow data flow and json requests/responses), username parameter.
+Output: http response through gin context, error message or a list of projects submitted by given username.
+*/
 func GetExtProjects(c *gin.Context) {
-	username := c.Param("username") //la idea es recuperar todos los projectos cuyo author id sea userId
+	username := c.Param("username")
 
 	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
 
@@ -143,7 +151,6 @@ func GetExtProjects(c *gin.Context) {
 	if err = cursor.All(ctx, &userprojects); err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Println(userprojects)
 	if len(userprojects) == 0 {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No listed projects under specified user. Maybe it doesn't exist!"})
 		return
@@ -153,16 +160,18 @@ func GetExtProjects(c *gin.Context) {
 
 }
 
+/*
+Input: Gin Context (Middleware to allow data flow and json requests/responses).
+Output: http response through gin context, error message or a list of projects submitted by authenticated user.
+*/
 func GetProjects(c *gin.Context) {
-	//session := sessions.Default(c)
-	//user := session.Get("user")
-	user := c.Value("username") // CREO
+	user := c.Value("username")
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session token"})
 	} else {
 		var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
 
-		cursor, err := projectCollection.Find(ctx, bson.M{"author": user}) //decodifica el json a golang luego de buscarlo en la tabla
+		cursor, err := projectCollection.Find(ctx, bson.M{"author": user})
 		defer cancel()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

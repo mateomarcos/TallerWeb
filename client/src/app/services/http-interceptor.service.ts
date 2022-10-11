@@ -8,6 +8,14 @@ import { retry, catchError } from 'rxjs/operators';
 import { LocalStorageService } from './local-storage-service.service';
 import { ToastrService } from 'ngx-toastr';
 
+
+/* As the name says, the Interceptor catches outgoing http requests and captures http responses.
+For the requests, it checks if the user is authenticated and adds a header to the request with the token.
+Previously it has been mentioned that we have both localstorage and cookies, but in this case I decided to just leave the first implemented method, which is 
+localStorage.
+
+For the responses, it checks for errors and displays them in a pop up using the toastr service.
+*/
 @Injectable()
 export class UniversalAppInterceptor implements HttpInterceptor {
 
@@ -34,8 +42,6 @@ export class UniversalAppInterceptor implements HttpInterceptor {
           // backend error
           errorMessage = `Server-side error: ${error.status} \n ${error.message} \n ${error.error.error}`;
         }
-        //console.log(errorMessage);
-        console.log(error)
         this.toastr.error(`${error.error.error}`, `Error ${error.status}: ${error.statusText}`)
         return throwError(() => errorMessage);
       })

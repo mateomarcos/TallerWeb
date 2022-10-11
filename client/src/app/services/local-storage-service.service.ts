@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
+/*Interface to implement Local Storage support. Also adding some jwt decodification techniques to check for 
+authentication and expiring tokens. */
 
-@Injectable()
 export class LocalStorageService {
 
     Set(key: string, value: string) {
@@ -22,8 +23,7 @@ export class LocalStorageService {
             return false;
         }
         var helper = new JwtHelperService;
-        //console.log(helper.isTokenExpired(token))
-        //console.log(helper.getTokenExpirationDate(token))
+
         if (helper.isTokenExpired(token)) {
             localStorage.removeItem("token");
             return false;

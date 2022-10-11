@@ -4,7 +4,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type User struct { //middleware entre programa y la base de datos mongo, practicamente golang a json y json a golang
+/*
+Middleware between the database and mongo driver, in which each field is linked to a column in the User collection of mongo.
+*/
+type User struct {
 	ID       primitive.ObjectID `bson:"_id`
 	Username *string            `json:"username" validate:"required,min=2,max=100"`
 	Password *string            `json:"password" validate:"required,min=6"`

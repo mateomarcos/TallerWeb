@@ -6,7 +6,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Project struct { //middleware entre programa y la base de datos mongo, practicamente golang a json y json a golang
+/*
+Middleware between the database and mongo driver, in which each field is linked to a column in the Project collection of mongo.
+*/
+type Project struct {
 	ID          primitive.ObjectID `bson:"_id`
 	Name        *string            `json:"name" validate:"required,min=5,max=100"`
 	Description *string            `json:"description" validate:"required,min=2,max=255"`

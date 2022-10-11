@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import {CookieService} from 'ngx-cookie-service';
 import { JwtHelperService } from '@auth0/angular-jwt';
+/*Interface to implement cookie support provided by ngx-cookie-service. Also adding some jwt decodification techniques to check for 
+authentication and expiring tokens.*/
 
 @Injectable({
   providedIn: 'root'
@@ -27,8 +29,7 @@ IsLoggedIn() : boolean {
         return false;
     }
     var helper = new JwtHelperService;
-    //console.log(helper.isTokenExpired(token))
-    //console.log(helper.getTokenExpirationDate(token))
+
     if (helper.isTokenExpired(token)) {
       this.cookieService.delete("token")
         return false;
